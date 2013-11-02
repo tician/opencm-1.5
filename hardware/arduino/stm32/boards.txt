@@ -1,0 +1,85 @@
+# See: http://code.google.com/p/arduino/wiki/Platforms
+
+
+##############################################################
+
+cm900_rev10.name=ROBOTIS CM-900 Rev 1.0
+
+cm900_rev10.upload.file_type=bin
+cm900_rev10.upload.maximum_size=49152
+cm900_rev10.upload.ram.maximum_size=17000
+cm900_rev10.upload.flash.maximum_size=49152
+cm900_rev10.upload.usbID=FFF2:FF48
+cm900_rev10.upload.altID=1
+cm900_rev10.upload.uploader=robotis-vcp
+cm900_rev10.upload.auto_reset=true
+
+cm900_rev10.build.variant=cm900
+cm900_rev10.build.mcu=cortex-m3
+cm900_rev10.build.f_cpu=72000000L
+cm900_rev10.build.core=robotis
+
+cm900_rev10.build.board=BOARD_CM900_REV10
+cm900_rev10.build.procmod=MCU_STM32F103C8
+cm900_rev10.build.vect=VECT_TAB_FLASH
+cm900_rev10.build.density=STM32_MEDIUM_DENSITY
+
+cm900_rev10.build.ldscript=linker/flash.ld
+cm900_rev10.build.system_lib=libcs3_stm32_med_density.a
+cm900_rev10.build.extra_flags=-D{build.procmod} -D{build.board} -D{build.density} -D{build.vect} -mthumb -march=armv7-m -Wall -pedantic -msoft-float
+
+##############################################################
+
+cm900.name=ROBOTIS CM-900 ES
+
+cm900.upload.file_type=bin
+cm900.upload.maximum_size=49152
+cm900.upload.ram.maximum_size=17000
+cm900.upload.flash.maximum_size=49152
+cm900.upload.usbID=FFF2:FF48
+cm900.upload.altID=1
+cm900.upload.uploader=robotis-vcp
+cm900.upload.auto_reset=true
+
+cm900.build.variant=cm900
+cm900.build.mcu=cortex-m3
+cm900.build.f_cpu=72000000L
+cm900.build.core=robotis
+
+cm900.build.board=BOARD_CM900
+cm900.build.procmod=MCU_STM32F103C8
+cm900.build.vect=VECT_TAB_FLASH
+cm900.build.density=STM32_MEDIUM_DENSITY
+
+cm900.build.ldscript=linker/flash.ld
+cm900.build.system_lib=libcs3_stm32_med_density.a
+cm900.build.extra_flags=-D{build.procmod} -D{build.board} -D{build.density} -D{build.vect} -mthumb -march=armv7-m -Wall -pedantic -msoft-float
+
+
+##############################################################
+
+cm904.name=ROBOTIS CM-9.04
+
+cm904.upload.file_type=bin
+cm904.upload.maximum_size=118000
+cm904.upload.ram.maximum_size=17000
+cm904.upload.flash.maximum_size=118000
+cm904.upload.usbID=FFF2:FF48
+cm904.upload.altID=1
+cm904.upload.uploader=robotis-vcp
+cm904.upload.auto_reset=true
+
+cm904.build.variant=cm904
+cm904.build.mcu=cortex-m3
+cm904.build.f_cpu=72000000L
+cm904.build.core=robotis
+
+cm904.build.board=BOARD_CM904
+cm904.build.procmod=MCU_STM32F103CB
+cm904.build.vect=VECT_TAB_FLASH
+cm904.build.density=STM32_MEDIUM_DENSITY
+
+cm904.build.ldscript=linker/flash.ld
+cm904.build.system_lib=libcs3_stm32_med_density.a
+cm904.build.extra_flags=-D{build.procmod} -D{build.board} -D{build.density} -D{build.vect} -mthumb -march=armv7-m -Wall -pedantic -msoft-float
+
