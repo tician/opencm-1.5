@@ -25,7 +25,7 @@
 import serial
 import re
 from optparse import OptionParser
-
+import time
 
 #python '{path}/{cmd}' --port={serial.port.file} -b '{build.path}/{build.project_name}.bin'
 
@@ -36,6 +36,9 @@ parser.add_option(  '-b', '--binary', dest='binFile',
 parser.add_option(  '-p', '--port', dest='port',
                     help='Serial port name/path.',
                     metavar='string', action='store', type='string')
+parser.add_option(  '-s', '--size', dest='size',
+                    help='Maximum permissible size of upload.',
+                    metavar='int', action='store', type='int')
 
 (options, args) = parser.parse_args()
 
@@ -49,54 +52,59 @@ if (not portName):
 	print ('You must provide a serial port to upload.\n')
 	exit()
 
-
-
-strDownloadReady = 'Ready..'
-strDownloadSuccess = 'Success..'
-strDownloadFail = 'Fail..'
-
+maxSize = 0
+maxSize = options.size
+if (maxSize == 0):
+	print ('You must provide a maximum upload size.\n')
+	exit()
 
 buffBinary = []
-#buffChecksum = bytearray(1)
 buffChecksum = 0
+buffSize = 0
 
 # read binary file into 2k length buffers
 binFile = open(fileName, 'r+b')
+#TODO: add check for success
+
+print ('Start loading file...')
+
 while (True):
-    tempbytes = binFile.read(2048)
+    tempbytes = binFile.read(256)
     if ( tempbytes != '' ):
-#        buffBinary.append(tempbytes)
         buffBinary.append(bytearray(tempbytes))
     else:
         break
 
 binFile.close()
+print ('done.')
 
 for indexa in range(len(buffBinary)):
     for indexb in range(len(buffBinary[indexa])):
-#        buffChecksum[0] += buffBinary[indexa][indexb]
         buffChecksum += buffBinary[indexa][indexb]
-
-#        buffChecksum[0] += int.from_bytes(buffBinary[indexa][indexb])
-#        buffChecksum += int.from_bytes(buffBinary[indexa][indexb])
- 
-#        tempest = int(buffBinary[indexa][indexb])
-#        buffChecksum[0] += tempest
-
-#print(hex(buffChecksum[0]))
+        buffSize += 1
 
 buffChecksum = buffChecksum & 0xFF
-print (hex(buffChecksum))
-exit()
+print ('File checksum = ' + hex(buffChecksum))
 
-
-
+if (buffSize > maxSize):
+    print ('Size of binary is larger than board limit')
+    print (str(buffSize) + ' > ' + str(maxSize))
+    exit()
 
 chatter = serial.Serial()
 chatter.baudrate = 115200
 chatter.port = portName
-chatter.timeout = 0.5
+chatter.timeout = 0.005
 chatter.open()
+#TODO: add check for success?
+
+
+#if not open
+#    print( 'Unable to open \'' + portName + '\'.  Check cable and/or try resetting the board.')
+#    time.sleep(1)
+    # retry some number of times
+#    chatter.open()
+
 
 
 
@@ -135,22 +143,113 @@ Sending 'AT&LD' to the bootloader causes it to erase the user flash memory.  Onc
 		print ('Download failed. Retrying...\n')
 '''
 
-'''
+#debug
+#chatter.write('AT&GO')
+#time.sleep(5)
 
 # Check if already in bootloader SerialMonitor()
-chatter.send('AT&LD')
-resp = chatter.read()
-
-if (re.match(resp,strDownloadReady) == None):
-# Not in bootloader, trigger an IWDG timeout reset
-
-
-elif (re.match(resp,strDownloadReady) != None):
-    for index in range(len(buffBinary)):
-        chatter.send(buffBinary[index])
-
-
 
 '''
+while True:
+    time.sleep(1)
+    chatter.write('AT')
+#    chatter.write('AT&LD')
+    time.sleep(1)
+    resp = chatter.read(2)
+    print(resp)
+    chatter.flushInput()
+
+    if ( resp == 'OK' ):
+        print ('In bootloader and ready for upload')
+
+        chatter.write('AT&LD')
+        resp = chatter.read(7)
+        print(resp)
+
+        if (re.match(resp,'Ready..') > 5):
+            print ('Downloading...')
+            for indexa in range(len(buffBinary)):
+                chatter.write(buffBinary[indexa])
+                time.sleep(0.4)
+            chatter.setDTR(True)
+            chatter.write(chr(buffChecksum))
+            time.sleep(0.05)
+
+        stat = chatter.read(5)
+        print(resp)
+        if (re.match(stat,'Fail..') > 5):
+            print ('failed.\n')
+            continue
+        elif (re.match(stat,'Success..') > 5):
+            print ('succeeded.\n')
+            break
+
+    else:
+        print ('Not in bootloader mode. Triggering reset.\n')
+    # Not in bootloader, trigger an IWDG timeout reset
+        chatter.setDTR(False)
+        time.sleep(.05)
+        chatter.setDTR(True)
+        chatter.write('CM9X')
+        time.sleep(1)
+'''
+
+while True:
+    rebootToBootloader = 0
+
+    time.sleep(1)
+    chatter.flushInput()
+    chatter.write('AT&LD')
+    time.sleep(1)
+    resp = chatter.read(20)
+    while (resp == '' and rebootToBootloader < 200):
+        resp = chatter.read(20)
+        rebootToBootloader += 1
+#    print(resp)
+    chatter.flushInput()
+
+    if ( re.match('Ready..', resp) != None ):
+#        print ('In bootloader and ready for upload.')
+#        time.sleep(0.05)
+
+        print ('Downloading...')
+        for indexa in range(len(buffBinary)):
+            chatter.write(buffBinary[indexa])
+#            time.sleep(0.05)
+        chatter.setDTR(True)
+        chatter.write(chr(buffChecksum))
+        time.sleep(2)
+
+        stat = chatter.read(20)
+        while (stat == ''):
+            stat = chatter.read(20)
+#        print(stat)
+        chatter.flushInput()
+#        if (re.match('Fail', stat) != None ):
+#            print ('failed.')
+#            continue
+        if (re.match('Success..',stat) != None ):
+            print ('succeeded.')
+            time.sleep(3)
+            chatter.write('AT&GO')
+            break
+        else:
+            print ('failed.')
+
+    else:
+        print ('Not in bootloader mode. Triggering reset.')
+    # Not in bootloader, trigger an IWDG timeout reset
+#        chatter.setDTR(True)
+#        time.sleep(.5)
+        chatter.setDTR(False)
+        time.sleep(.5)
+        chatter.setDTR(True)
+        time.sleep(.5)
+        chatter.write('CM9X')
+        chatter.close()
+        time.sleep(5)
+        chatter.open()
+
 
 exit()
+

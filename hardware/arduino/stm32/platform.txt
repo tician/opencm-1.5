@@ -58,6 +58,4 @@ recipe.size.regex=\.text\s+([0-9]+).*
 tools.opencm.cmd=opencm.py
 tools.opencm.path={runtime.ide.path}/hardware/tools
 
-tools.opencm.upload.params.verbose=
-tools.opencm.upload.params.quiet=
-tools.opencm.upload.pattern=python "{path}/{cmd}" {upload.verbose} --port={serial.port.file} --reset={upload.auto_reset} -b "{build.path}/{build.project_name}.bin"
+tools.opencm.upload.pattern=python "{path}/{cmd}" -s {upload.maximum_size} -p {serial.port.file} -b "{build.path}/{build.project_name}.bin"
