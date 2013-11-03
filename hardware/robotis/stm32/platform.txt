@@ -5,12 +5,14 @@
 name=OpenCM Boards
 compiler.path={runtime.ide.path}/hardware/tools/g++_arm_none_eabi/bin/
 compiler.c.cmd=arm-none-eabi-gcc
-compiler.c.flags=-c -g -Os -w -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -Dprintf=iprintf
+#compiler.c.flags=-c -g -Os -w -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -Dprintf=iprintf
+compiler.c.flags=-c -g -Os -w -ffunction-sections -fdata-sections -nostdlib
 compiler.c.elf.cmd=arm-none-eabi-g++
 compiler.c.elf.flags=-Os -Wl,--gc-sections
 compiler.S.flags=-c -g -assembler-with-cpp
 compiler.cpp.cmd=arm-none-eabi-g++
-compiler.cpp.flags=-c -g -Os -w -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -Dprintf=iprintf
+#compiler.cpp.flags=-c -g -Os -w -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -Dprintf=iprintf
+compiler.cpp.flags=-c -g -Os -w -ffunction-sections -fdata-sections -nostdlib -fno-rtti -fno-exceptions
 compiler.ar.cmd=arm-none-eabi-ar
 compiler.ar.flags=rcs
 compiler.objcopy.cmd=arm-none-eabi-objcopy
@@ -56,8 +58,9 @@ recipe.size.regex=\.text\s+([0-9]+).*
 # -------------------
 
 tools.cm9pusher.cmd=opencm.py
-tools.cm9pusher.path={runtime.ide.path}/hardware/tools
+#tools.cm9pusher.path={runtime.ide.path}/hardware/tools
+tools.cm9pusher.path={sketchbook.path}/hardware/tools
 
 tools.cm9pusher.upload.params.verbose=
 tools.cm9pusher.upload.params.quiet=
-tools.cm9pusher.upload.pattern=python "{path}/{cmd}" -s {upload.maximum_size} -p {serial.port.file} -b "{build.path}/{build.project_name}.bin"
+tools.cm9pusher.upload.pattern=python "{path}/{cmd}" -s {upload.maximum_size} -p {serial.port} -b "{build.path}/{build.project_name}.bin"

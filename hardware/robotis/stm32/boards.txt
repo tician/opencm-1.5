@@ -14,6 +14,7 @@ cm900_rev10.upload.altID=1
 cm900_rev10.upload.uploader=robotis-vcp
 cm900_rev10.upload.auto_reset=true
 cm900_rev10.upload.tool=cm9pusher
+cm900_rev10.upload.protocol=opencm
 
 cm900_rev10.build.variant=cm900
 cm900_rev10.build.mcu=cortex-m3
@@ -42,6 +43,7 @@ cm900.upload.altID=1
 cm900.upload.uploader=robotis-vcp
 cm900.upload.auto_reset=true
 cm900.upload.tool=cm9pusher
+cm900.upload.protocol=opencm
 
 cm900.build.variant=cm900
 cm900.build.mcu=cortex-m3
@@ -71,6 +73,7 @@ cm904.upload.altID=1
 cm904.upload.uploader=robotis-vcp
 cm904.upload.auto_reset=true
 cm904.upload.tool=cm9pusher
+cm904.upload.protocol=opencm
 
 cm904.build.variant=cm904
 cm904.build.mcu=cortex-m3

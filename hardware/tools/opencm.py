@@ -46,11 +46,18 @@ fileName = options.binFile
 if (not fileName):
 	print ('You must provide an input file name.\n')
 	exit()
-
+	
 portName = options.port
 if (not portName):
 	print ('You must provide a serial port to upload.\n')
 	exit()
+
+#if (re.match('COM', portName) != None):
+#    print ('Using ' + portName + 'on Windows')
+#elif (re.match('/dev/tty', portName) != None):
+#    print ('Using ' + portName + 'on GNU/Linux')
+
+#exit()
 
 maxSize = 0
 maxSize = options.size
