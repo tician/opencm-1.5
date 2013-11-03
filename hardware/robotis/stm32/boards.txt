@@ -9,10 +9,10 @@ cm900_rev10.upload.file_type=bin
 cm900_rev10.upload.maximum_size=49152
 cm900_rev10.upload.ram.maximum_size=17000
 cm900_rev10.upload.flash.maximum_size=49152
-cm900_rev10.upload.usbID=FFF2:FF48
-cm900_rev10.upload.altID=1
-cm900_rev10.upload.uploader=robotis-vcp
-cm900_rev10.upload.auto_reset=true
+#cm900_rev10.upload.usbID=FFF2:FF48
+#cm900_rev10.upload.altID=1
+#cm900_rev10.upload.uploader=robotis-vcp
+#cm900_rev10.upload.auto_reset=true
 cm900_rev10.upload.tool=cm9pusher
 cm900_rev10.upload.protocol=opencm
 
@@ -28,7 +28,8 @@ cm900_rev10.build.density=STM32_MEDIUM_DENSITY
 
 cm900_rev10.build.ldscript=linker/flash.ld
 cm900_rev10.build.system_lib=libcs3_stm32_med_density.a
-cm900_rev10.build.extra_flags=-D{build.procmod} -D{build.board} -D{build.density} -D{build.vect} -mthumb -march=armv7-m -Wall -pedantic -msoft-float
+cm900_rev10.build.extra_flags=-D{build.procmod} -D{build.board} -D{build.density} -D{build.vect} -mthumb -Xlinker -march=armv7-m -Wall -pedantic -msoft-float
+#cm900_rev10.build.extra_flags=-D{build.procmod} -D{build.board} -D{build.density} -D{build.vect} -mthumb -Xlinker -Wall -pedantic -msoft-float
 
 ##############################################################
 
