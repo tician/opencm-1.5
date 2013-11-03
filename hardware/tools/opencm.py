@@ -150,6 +150,7 @@ Sending 'AT&LD' to the bootloader causes it to erase the user flash memory.  Onc
 # Check if already in bootloader SerialMonitor()
 
 '''
+# only works for CM-904 bootloader and later
 while True:
     time.sleep(1)
     chatter.write('AT')
@@ -159,39 +160,50 @@ while True:
     print(resp)
     chatter.flushInput()
 
-    if ( resp == 'OK' ):
+    if (re.match('OK',resp) != None):
         print ('In bootloader and ready for upload')
 
         chatter.write('AT&LD')
-        resp = chatter.read(7)
-        print(resp)
+        eraserTimeout = 0
+        readr = chatter.read(20)
+        while (readr == '' and eraserTimeout < 200):
+            readr = chatter.read(20)
+            eraserTimeout += 1
 
-        if (re.match(resp,'Ready..') > 5):
+        if (re.match('Ready..',readr) != None):
             print ('Downloading...')
             for indexa in range(len(buffBinary)):
                 chatter.write(buffBinary[indexa])
-                time.sleep(0.4)
             chatter.setDTR(True)
             chatter.write(chr(buffChecksum))
-            time.sleep(0.05)
 
-        stat = chatter.read(5)
-        print(resp)
-        if (re.match(stat,'Fail..') > 5):
-            print ('failed.\n')
-            continue
-        elif (re.match(stat,'Success..') > 5):
-            print ('succeeded.\n')
-            break
+            stat = chatter.read(20)
+            while (stat == ''):
+                stat = chatter.read(20)
+            chatter.flushInput()
+
+            if (re.match('Success..',stat) != None ):
+                print ('succeeded.')
+                time.sleep(3)
+                chatter.write('AT&GO')
+                break
+            else:
+                print ('failed.')
+        else:
+            print ('Did not receive expected response from bootloader')
+            print ('Received: ' + readr)
 
     else:
-        print ('Not in bootloader mode. Triggering reset.\n')
     # Not in bootloader, trigger an IWDG timeout reset
+       print ('Not in bootloader mode. Triggering reset.\n')
         chatter.setDTR(False)
-        time.sleep(.05)
+        time.sleep(.5)
         chatter.setDTR(True)
+        time.sleep(.5)
         chatter.write('CM9X')
-        time.sleep(1)
+        chatter.close()
+        time.sleep(5)
+        chatter.open()
 '''
 
 while True:
@@ -218,7 +230,6 @@ while True:
 #            time.sleep(0.05)
         chatter.setDTR(True)
         chatter.write(chr(buffChecksum))
-        time.sleep(2)
 
         stat = chatter.read(20)
         while (stat == ''):
@@ -237,8 +248,8 @@ while True:
             print ('failed.')
 
     else:
-        print ('Not in bootloader mode. Triggering reset.')
     # Not in bootloader, trigger an IWDG timeout reset
+        print ('Not in bootloader mode. Triggering reset.')
 #        chatter.setDTR(True)
 #        time.sleep(.5)
         chatter.setDTR(False)

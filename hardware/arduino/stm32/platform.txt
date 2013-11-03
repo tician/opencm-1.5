@@ -52,10 +52,12 @@ recipe.size.pattern="{compiler.path}{compiler.size.cmd}" -A "{build.path}/{build
 recipe.size.regex=\.text\s+([0-9]+).*
 
 
-# OpenCM Uploader tools
+# OpenCM Uploader tool
 # -------------------
 
-tools.opencm.cmd=opencm.py
-tools.opencm.path={runtime.ide.path}/hardware/tools
+tools.cm9pusher.cmd=opencm.py
+tools.cm9pusher.path={runtime.ide.path}/hardware/tools
 
-tools.opencm.upload.pattern=python "{path}/{cmd}" -s {upload.maximum_size} -p {serial.port.file} -b "{build.path}/{build.project_name}.bin"
+tools.cm9pusher.upload.params.verbose=
+tools.cm9pusher.upload.params.quiet=
+tools.cm9pusher.upload.pattern=python "{path}/{cmd}" -s {upload.maximum_size} -p {serial.port.file} -b "{build.path}/{build.project_name}.bin"
