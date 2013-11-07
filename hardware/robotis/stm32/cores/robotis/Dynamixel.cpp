@@ -62,7 +62,7 @@ void Dynamixel::begin(int baud) {
 	mCommStatus= 0;
 	//dxl_initialize(0, baud);
 	setLibStatusReturnLevel(2);
-	setLibNumberTxRxAttempts(1);
+	setLibNumberTxRxAttempts(2);
 }
 
 

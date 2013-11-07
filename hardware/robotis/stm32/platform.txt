@@ -1,24 +1,38 @@
 
+name=OpenCM Boards
+
 # STM32 compile variables
 # --------------------- 
 
-name=OpenCM Boards
 compiler.path={runtime.ide.path}/hardware/tools/g++_arm_none_eabi/bin/
+
 compiler.c.cmd=arm-none-eabi-gcc
-#compiler.c.flags=-c -g -Os -w -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -Dprintf=iprintf  -fno-common
-compiler.c.flags=-c -g -Os -w -ffunction-sections -fdata-sections -nostdlib
+#compiler.c.flags=-c -g -Os -w -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -Dprintf=iprintf -fno-common
+#compiler.c.flags=-c -g -Os -ffunction-sections -fdata-sections -fno-common -nostdlib
+compiler.c.flags=-c -g -Os -mthumb -march=armv7-m -pedantic -nostdlib  --param max-inline-insns-single=500 -Dprintf=iprintf -fno-common -ffunction-sections -fdata-sections -Wl,--gc-sections -msoft-float
+
 compiler.c.elf.cmd=arm-none-eabi-g++
 compiler.c.elf.flags=-Os -Wl,--gc-sections
-compiler.S.flags=-c -g -assembler-with-cpp
+#compiler.c.elf.flags=
+
+#compiler.S.flags=-c -g -assembler-with-cpp
+#compiler.S.flags=-march=armv7-m -mthumb -pedantic
+compiler.S.flags=-c -g -assembler-with-cpp -march=armv7-m -mthumb -pedantic
+
 compiler.cpp.cmd=arm-none-eabi-g++
 #compiler.cpp.flags=-c -g -Os -w -ffunction-sections -fdata-sections -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -Dprintf=iprintf -fno-common
-compiler.cpp.flags=-c -g -Os -w -ffunction-sections -fdata-sections -nostdlib -fno-rtti -fno-exceptions
+#compiler.cpp.flags=-c -g -Os -ffunction-sections -fdata-sections -fno-common -nostdlib -fno-rtti -fno-exceptions
+compiler.cpp.flags=-c -g -Os -mthumb -march=armv7-m -pedantic -nostdlib  --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -Dprintf=iprintf -fno-common -ffunction-sections -fdata-sections -Wl,--gc-sections -msoft-float 
+
 compiler.ar.cmd=arm-none-eabi-ar
 compiler.ar.flags=rcs
+
 compiler.objcopy.cmd=arm-none-eabi-objcopy
 compiler.objcopy.eep.flags=-O ihex -j .eeprom --set-section-flags=.eeprom=alloc,load --no-change-warnings --change-section-lma .eeprom=0
+
 compiler.elf2hex.flags=-v -O binary
 compiler.elf2hex.cmd=arm-none-eabi-objcopy
+
 compiler.ldflags=
 compiler.size.cmd=arm-none-eabi-size
 compiler.define=-DARDUINO=
@@ -35,7 +49,7 @@ recipe.S.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.S.flags} -mcpu=
 recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -mcpu={build.mcu} -DF_CPU={build.f_cpu} -D{software}={runtime.ide.version} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
 
 ## Compile c++ files
-recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -mcpu={build.mcu} -DF_CPU={build.f_cpu} -D{software}={runtime.ide.version} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
+recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -mcpu={build.mcu} -DF_CPU={build.f_cpu} -D{software}={runtime.ide.version} {build.extra_flags} {includes} -fno-rtti -fno-exceptions -Wall "{source_file}" -o "{object_file}"
 
 ## Create archives
 recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} "{build.path}/{archive_file}" "{object_file}"
@@ -43,7 +57,11 @@ recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} "{build
 ## Combine gc-sections, archives, and objects
 #recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} -mcpu={build.mcu} "-L{build.variant.path}" "-T{build.variant.path}/{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" -o "{build.path}/{build.project_name}.elf" "-L{build.path}" -lm -lgcc -mthumb -Wl,--cref -Wl,--check-sections -Wl,--gc-sections -Wl,--entry=Reset_Handler -Wl,--unresolved-symbols=report-all -Wl,--warn-common -Wl,--warn-section-align -Wl,--warn-unresolved-symbols -Wl,--start-group {object_files} "{build.variant.path}/{build.system_lib}" "{build.path}/{archive_file}" -Wl,--end-group
 
-recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} -mcpu={build.mcu} "-L{build.variant.path}" "-T{build.variant.path}/{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" -o "{build.path}/{build.project_name}.elf" "-L{build.path}" -lm -lgcc -Wl,--cref -Wl,--check-sections -Wl,--gc-sections -Wl,--entry=Reset_Handler -Wl,--unresolved-symbols=report-all -Wl,--warn-common -Wl,--warn-section-align -Wl,--warn-unresolved-symbols -Wl,--start-group {object_files} "{build.variant.path}/{build.system_lib}" "{build.path}/{archive_file}" -Wl,--end-group
+#recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} -mcpu={build.mcu} "-L{build.variant.path}" "-L{build.path}" "-T{build.variant.path}/{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" -o "{build.path}/{build.project_name}.elf" -Wl,--start-group {object_files} "{build.variant.path}/{build.system_lib}" "{build.path}/{archive_file}" -Wl,--end-group -lm -Wl,--cref -Wl,--check-sections -Wl,--gc-sections -Wl,--entry=Reset_Handler -Wl,--unresolved-symbols=report-all -Wl,--warn-common -Wl,--warn-section-align -Wl,--warn-unresolved-symbols 
+
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} -mcpu={build.mcu} "-L{build.path}" "-L{build.variant.path}" "-T{build.variant.path}/{build.ldscript}" "-Wl,-Map,{build.path}/{build.project_name}.map" -o "{build.path}/{build.project_name}.elf" -lm -lgcc -mthumb -Wl,--start-group  "{build.path}/syscalls.c.o" {object_files} "{build.variant.path}/{build.system_lib}" "{build.path}/{archive_file}" -Wl,--end-group -lm -Wl,--cref -Wl,--check-sections -Wl,--gc-sections -Wl,--entry=Reset_Handler -Wl,--unresolved-symbols=report-all -Wl,--warn-common -Wl,--warn-section-align
+
+#recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} -mcpu={build.mcu} "-L{build.path}" "-L{build.variant.path}" "-T{build.variant.path}/{build.ldscript}" -mthumb -msoft-float -march=armv7-m -pedantic -Xlinker --gc-sections -Wall -nostdlib "-Wl,-Map,{build.path}/{build.project_name}.map" -Wl,--cref -Wl,--check-sections -Wl,--gc-sections -Wl,--entry=Reset_Handler -Wl,--unresolved-symbols=report-all -Wl,--warn-common -Wl,--warn-section-align -Wl,--warn-unresolved-symbols -o "{build.path}/{build.project_name}.elf" "-L{build.path}" -Wl,--start-group "{build.path}/startup_stm32f10x_md.S.o" "{build.path}/syscalls.c.o"  "{build.path}/{archive_file}" {object_files} "{build.variant.path}/{build.system_lib}" -lm -lc -lgcc -Wl,--end-group
 
 ## Create eeprom
 recipe.objcopy.eep.pattern=

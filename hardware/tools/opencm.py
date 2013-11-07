@@ -22,6 +22,10 @@
  *******************************************************************************
 '''
 
+#python ./opencm.py -b ./Blink_cm904.cpp.bin -p /dev/ttyACM0 -s 118000 -t cm904
+#python ./opencm.py -b ./Blink_cm900.cpp.bin -p /dev/ttyACM0 -s 49152
+
+
 import serial
 import re
 from optparse import OptionParser
@@ -39,18 +43,26 @@ parser.add_option(  '-p', '--port', dest='port',
 parser.add_option(  '-s', '--size', dest='size',
                     help='Maximum permissible size of upload.',
                     metavar='int', action='store', type='int')
+parser.add_option(  '-t', '--type', dest='board',
+                    help='Board variant.',
+                    metavar='string', action='store', type='string')
 
 (options, args) = parser.parse_args()
 
 fileName = options.binFile
 if (not fileName):
-	print ('You must provide an input file name.\n')
-	exit()
-	
+    print ('You must provide an input file name.\n')
+    exit()
+    
 portName = options.port
 if (not portName):
-	print ('You must provide a serial port to upload.\n')
-	exit()
+    print ('You must provide a serial port to upload.\n')
+    exit()
+
+boardVariant = options.board
+if (not boardVariant):
+    print ('You did not provide a board variant, so assuming CM-900 (safest)')
+    boardVariant = 'cm900'
 
 #if (re.match('COM', portName) != None):
 #    print ('Using ' + portName + 'on Windows')
@@ -62,8 +74,8 @@ if (not portName):
 maxSize = 0
 maxSize = options.size
 if (maxSize == 0):
-	print ('You must provide a maximum upload size.\n')
-	exit()
+    print ('You must provide a maximum upload size.\n')
+    exit()
 
 buffBinary = []
 buffChecksum = 0
@@ -135,49 +147,94 @@ Sending 'AT&LD' to the bootloader causes it to erase the user flash memory.  Onc
 '''
 
 '''
-	PC sends 'AT&LD'
-	CM9 sends 'Ready..'
-	PC sends binary data in chunks up to 2048 in length.
-	Unnecessary?: PC sets DTR true
-	PC sends checksum byte
-		Checksum is single byte sum of every byte sent in binary file.
-	CM9 sends 'Success..' or 'Fail..'
-	if 'Success..'
-		print ('Download succeeded. Starting sketch...\n')
-		PC sends AT&GO
-		exit()
-	else
-		print ('Download failed. Retrying...\n')
+    PC sends 'AT&LD'
+    CM9 sends 'Ready..'
+    PC sends binary data in chunks up to 2048 in length.
+    Unnecessary?: PC sets DTR true
+    PC sends checksum byte
+        Checksum is single byte sum of every byte sent in binary file.
+    CM9 sends 'Success..' or 'Fail..'
+    if 'Success..'
+        print ('Download succeeded. Starting sketch...\n')
+        PC sends AT&GO
+        exit()
+    else
+        print ('Download failed. Retrying...\n')
 '''
 
-#debug
-#chatter.write('AT&GO')
-#time.sleep(5)
+if (boardVariant == 'cm904'):
 
-# Check if already in bootloader SerialMonitor()
+    # only works for CM-904 bootloader and later
+    while True:
+        time.sleep(.25)
+        chatter.write('AT')
+        time.sleep(.25)
+        resp = chatter.read(2)
+        chatter.flushInput()
 
-'''
-# only works for CM-904 bootloader and later
-while True:
-    time.sleep(1)
-    chatter.write('AT')
-#    chatter.write('AT&LD')
-    time.sleep(1)
-    resp = chatter.read(2)
-    print(resp)
-    chatter.flushInput()
+        if (re.match('OK',resp) != None):
+            print ('In bootloader and ready for upload')
+            time.sleep(0.1)
 
-    if (re.match('OK',resp) != None):
-        print ('In bootloader and ready for upload')
-
-        chatter.write('AT&LD')
-        eraserTimeout = 0
-        readr = chatter.read(20)
-        while (readr == '' and eraserTimeout < 200):
+            chatter.write('AT&LD')
+            eraserTimeout = 0
             readr = chatter.read(20)
-            eraserTimeout += 1
+            while (readr == '' and eraserTimeout < 500):
+                readr = chatter.read(20)
+                eraserTimeout += 1
 
-        if (re.match('Ready..',readr) != None):
+            if (re.match('Ready..',readr) != None):
+                print ('Downloading...')
+                for indexa in range(len(buffBinary)):
+                    chatter.write(buffBinary[indexa])
+                chatter.setDTR(True)
+                chatter.write(chr(buffChecksum))
+
+                stat = chatter.read(20)
+                while (stat == ''):
+                    stat = chatter.read(20)
+                chatter.flushInput()
+
+                if (re.match('Success..',stat) != None ):
+                    print ('succeeded.')
+                    time.sleep(3)
+                    chatter.write('AT&GO')
+                    break
+                else:
+                    print ('failed.')
+            else:
+                print ('Did not receive expected response from bootloader')
+                print ('Received: ' + readr)
+
+        else:
+        # Not in bootloader, trigger an IWDG timeout reset
+            print ('Not in bootloader mode. Triggering reset.')
+            chatter.setDTR(False)
+            time.sleep(.5)
+            chatter.setDTR(True)
+            time.sleep(.5)
+            chatter.write('CM9X')
+            chatter.close()
+            time.sleep(3)
+            chatter.open()
+
+else:
+
+    while True:
+        rebootToBootloader = 0
+
+        time.sleep(.5)
+        chatter.flushInput()
+        chatter.write('AT&LD')
+        time.sleep(.5)
+        resp = chatter.read(20)
+        while (resp == '' and rebootToBootloader < 500):
+            resp = chatter.read(20)
+            rebootToBootloader += 1
+        chatter.flushInput()
+
+        if ( re.match('Ready..', resp) != None ):
+
             print ('Downloading...')
             for indexa in range(len(buffBinary)):
                 chatter.write(buffBinary[indexa])
@@ -188,7 +245,6 @@ while True:
             while (stat == ''):
                 stat = chatter.read(20)
             chatter.flushInput()
-
             if (re.match('Success..',stat) != None ):
                 print ('succeeded.')
                 time.sleep(3)
@@ -196,78 +252,20 @@ while True:
                 break
             else:
                 print ('failed.')
+
         else:
-            print ('Did not receive expected response from bootloader')
-            print ('Received: ' + readr)
-
-    else:
-    # Not in bootloader, trigger an IWDG timeout reset
-       print ('Not in bootloader mode. Triggering reset.\n')
-        chatter.setDTR(False)
-        time.sleep(.5)
-        chatter.setDTR(True)
-        time.sleep(.5)
-        chatter.write('CM9X')
-        chatter.close()
-        time.sleep(5)
-        chatter.open()
-'''
-
-while True:
-    rebootToBootloader = 0
-
-    time.sleep(1)
-    chatter.flushInput()
-    chatter.write('AT&LD')
-    time.sleep(1)
-    resp = chatter.read(20)
-    while (resp == '' and rebootToBootloader < 200):
-        resp = chatter.read(20)
-        rebootToBootloader += 1
-#    print(resp)
-    chatter.flushInput()
-
-    if ( re.match('Ready..', resp) != None ):
-#        print ('In bootloader and ready for upload.')
-#        time.sleep(0.05)
-
-        print ('Downloading...')
-        for indexa in range(len(buffBinary)):
-            chatter.write(buffBinary[indexa])
-#            time.sleep(0.05)
-        chatter.setDTR(True)
-        chatter.write(chr(buffChecksum))
-
-        stat = chatter.read(20)
-        while (stat == ''):
-            stat = chatter.read(20)
-#        print(stat)
-        chatter.flushInput()
-#        if (re.match('Fail', stat) != None ):
-#            print ('failed.')
-#            continue
-        if (re.match('Success..',stat) != None ):
-            print ('succeeded.')
+        # Not in bootloader, trigger an IWDG timeout reset
+            print ('Not in bootloader mode. Triggering reset.')
+    #        chatter.setDTR(True)
+    #        time.sleep(.5)
+            chatter.setDTR(False)
+            time.sleep(.5)
+            chatter.setDTR(True)
+            time.sleep(.5)
+            chatter.write('CM9X')
+            chatter.close()
             time.sleep(3)
-            chatter.write('AT&GO')
-            break
-        else:
-            print ('failed.')
-
-    else:
-    # Not in bootloader, trigger an IWDG timeout reset
-        print ('Not in bootloader mode. Triggering reset.')
-#        chatter.setDTR(True)
-#        time.sleep(.5)
-        chatter.setDTR(False)
-        time.sleep(.5)
-        chatter.setDTR(True)
-        time.sleep(.5)
-        chatter.write('CM9X')
-        chatter.close()
-        time.sleep(5)
-        chatter.open()
-
+            chatter.open()
 
 exit()
 

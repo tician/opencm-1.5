@@ -51,7 +51,7 @@
 #define BOARD_LED_PIN           16
 
 /* Number of USARTs/UARTs whose pins are broken out to headers */
-//#define BOARD_NR_USARTS         3
+#define BOARD_NR_USARTS         3
 
 /* Default USART pin numbers (not considering AFIO remap) */
 #define BOARD_USART1_TX_PIN     9   //D9(PA9)
@@ -62,7 +62,7 @@
 #define BOARD_USART3_RX_PIN     25	//D25 (PB11)
 
 /* Number of SPI ports */
-//#define BOARD_NR_SPI            2
+#define BOARD_NR_SPI            2
 
 /* Default SPI pin numbers (not considering AFIO remap) */
 #define BOARD_SPI1_NSS_PIN      10 //D10 (PA4)

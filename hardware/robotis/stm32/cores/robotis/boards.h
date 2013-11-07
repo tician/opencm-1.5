@@ -143,14 +143,13 @@ void init(void);
 bool boardUsesPin(uint8 pin);
 
 /* Include the appropriate private header from boards/: */
-#include "pins_arduino.h"
 
 /* FIXME HACK put boards/ before these paths once IDE uses make. */
-//#if defined(BOARD_CM900) || defined(BOARD_CM900_REV10)
-//#include "CM900.h"
-//#elif defined(BOARD_CM904)
-//#include "CM904.h"
-//#else
+#if defined(BOARD_CM900) || defined(BOARD_CM900_REV10)
+#include "CM900.h"
+#elif defined(BOARD_CM904)
+#include "CM904.h"
+#else
 /*
  * TODO turn this into a warning so people can:
  *
@@ -160,8 +159,8 @@ bool boardUsesPin(uint8 pin);
  * This will enable third-party board support without requiring that
  * anybody hack around in libmaple itself.
  */
-//#error "Board type has not been selected correctly."
-//#endif
+#error "Board type has not been selected correctly."
+#endif
 
 /* Set derived definitions */
 /**
