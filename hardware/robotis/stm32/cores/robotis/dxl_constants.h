@@ -124,6 +124,7 @@
 #define ERRBIT_OVERLOAD		(32)
 #define ERRBIT_INSTRUCTION	(64)
 
+
 /*
  * defines message of communication
  * */
@@ -153,11 +154,6 @@
 #define PIN_ENABLE_RXD			5
 
 
-#define PORT_DXL_TXD			GPIOB
-#define PORT_DXL_RXD			GPIOB
-
-#define PIN_DXL_TXD				6
-#define PIN_DXL_RXD				7
 //set to TXD Enable
 #define	DXL_TXD	{ gpio_write_bit(PORT_ENABLE_TXD, PIN_ENABLE_TXD, 1 ); gpio_write_bit(PORT_ENABLE_RXD, PIN_ENABLE_RXD, 0 );}
 //set to RXD Enable
@@ -169,16 +165,43 @@
 #define PORT_TXRX_DIRECTION		GPIOB
 #define PIN_TXRX_DIRECTION		5
 
+
+#define	DXL_TXD	{ gpio_write_bit(PORT_TXRX_DIRECTION, PIN_TXRX_DIRECTION, 1); } //set to HIGH
+#define	DXL_RXD	{ gpio_write_bit(PORT_TXRX_DIRECTION, PIN_TXRX_DIRECTION, 0); } //set to LOW
+
+
+#endif
+
 #define PORT_DXL_TXD			GPIOB
 #define PORT_DXL_RXD			GPIOB
 
 #define PIN_DXL_TXD				6
 #define PIN_DXL_RXD				7
 
-#define	DXL_TXD	{ gpio_write_bit(PORT_TXRX_DIRECTION, PIN_TXRX_DIRECTION, 1); } //set to HIGH
-#define	DXL_RXD	{ gpio_write_bit(PORT_TXRX_DIRECTION, PIN_TXRX_DIRECTION, 0); } //set to LOW
+/*
+ * For olny OpenCM9.04 485 SHD Board that uses USART3 as DXL3 Bus
+ * */
+#define PORT_TXRX_DIRECTION3	GPIOC
+#define PIN_TXRX_DIRECTION3		14
 
-#endif
+#define PORT_DXL_TXD3			GPIOB
+#define PORT_DXL_RXD3			GPIOB
+
+#define PIN_DXL_TXD3			10
+#define PIN_DXL_RXD3			11
+
+
+#define	DXL_TXD3	{ gpio_write_bit(PORT_TXRX_DIRECTION3, PIN_TXRX_DIRECTION3, 1); } //set to HIGH
+#define	DXL_RXD3	{ gpio_write_bit(PORT_TXRX_DIRECTION3, PIN_TXRX_DIRECTION3, 0); } //set to LOW
+
+
+///////////////// utility for value ///////////////////////////
+#define DXL_MAKEWORD(a, b)      ((unsigned short)(((unsigned char)(((unsigned long)(a)) & 0xff)) | ((unsigned short)((unsigned char)(((unsigned long)(b)) & 0xff))) << 8))
+#define DXL_MAKEDWORD(a, b)     ((unsigned int)(((unsigned short)(((unsigned long)(a)) & 0xffff)) | ((unsigned int)((unsigned short)(((unsigned long)(b)) & 0xffff))) << 16))
+#define DXL_LOWORD(l)           ((unsigned short)(((unsigned long)(l)) & 0xffff))
+#define DXL_HIWORD(l)           ((unsigned short)((((unsigned long)(l)) >> 16) & 0xffff))
+#define DXL_LOBYTE(w)           ((unsigned char)(((unsigned long)(w)) & 0xff))
+#define DXL_HIBYTE(w)           ((unsigned char)((((unsigned long)(w)) >> 8) & 0xff))
 
 
 
