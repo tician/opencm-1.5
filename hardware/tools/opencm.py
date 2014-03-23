@@ -129,8 +129,9 @@ chatter.open()
 
 '''
 If sketch running, toggle DTR and send 'CM9X' to reboot to bootloader's SerialMonitor()
+USBCore uses set to 1200bps 8-N-1, then DTR low to reboot to bootloader
 
-Upon reset, CM9 bootloader will send a byte of data to identify itself as a CDC device (0x0A - CDC_DATA)?
+Upon reset, CM9 bootloader will identify itself as a CDC device
 
 Within SerialMonitor() of the bootloader:
 Sending 'AT' to the bootloader causes it to respond with 'OK'. (does not appear to work on pre-CM-904)
@@ -143,7 +144,7 @@ Sending 'AT&NAME' to the bootloader responds with the board name (CM-904). (does
 
 Sending 'AT&GO' starts the user application.
 
-Sending 'AT&LD' to the bootloader causes it to erase the user flash memory.  Once that is done, the CM9 responds with 'Ready..'.  The PC then starts sending the binary file in chunks up to 2048 bytes in length until the file is completely sent.  After that the PC sends the single byte checksum which is the sum of all bytes in the binary file.  The CM9 responds with either 'Success..' or 'Failure..', at which point you either send 'AT&GO' to start the firmware or resend 'AT&LD' to retry the download.
+Sending 'AT&LD' to the bootloader causes it to erase the user flash memory.  Once that is done, the CM9 responds with 'Ready..'.  The PC then starts sending the binary file in chunks up to 2048 bytes in length (each packet is only 64 bytes; endpoint limited) until the file is completely sent.  After that the PC sends the single byte checksum which is the sum of all bytes in the binary file.  The CM9 responds with either 'Success..' or 'Failure..', at which point you either send 'AT&GO' to start the firmware or resend 'AT&LD' to retry the download.
 '''
 
 '''
